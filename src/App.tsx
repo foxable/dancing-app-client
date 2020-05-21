@@ -21,57 +21,63 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 const App: React.FC<IAppProps> = props => {
-  const [cachedDances, setCachedDances] = useState<Record<string, IDance[]>>(
+  const [dancesByType, setDancesByType] = useState<Record<string, IDance[]>>(
     {}
   );
-  const [cachedFigures, setCachedFigures] = useState<Record<string, IFigure[]>>(
-    {}
-  );
+  const [figuresByDance, setFiguresByDance] = useState<
+    Record<string, IFigure[]>
+  >({});
   const [selectedDanceType, setSelectedDanceType] = useState('');
   const [selectedDance, setSelectedDance] = useState('');
   const [dances, setDances] = useState<IDance[]>([]);
   const [figures, setFigures] = useState<IFigure[]>([]);
   const [danceTypes, setDanceTypes] = useState<IDanceType[]>([]);
 
-  async function fetchDanceTypes(): Promise<void> {
-    const danceTypes = await props.service.fetchDanceTypes();
-    const selectedDanceType = danceTypes.length > 0 ? danceTypes[0].id : '';
-    setSelectedDanceType(selectedDanceType);
-    setDanceTypes(danceTypes);
+  useEffect(() => {
+    const fetchDanceTypes = async () => {
+      const danceTypes = await props.service.fetchDanceTypes();
+      const selectedDanceType = danceTypes.length > 0 ? danceTypes[0].id : '';
+      setSelectedDanceType(selectedDanceType);
+      setDanceTypes(danceTypes);
+    };
 
-    if (selectedDanceType !== '') fetchDances(selectedDanceType);
-  }
-
-  async function fetchFigures(danceId: string): Promise<void> {
-    const figures = await (cachedFigures[danceId] ||
-      props.service.fetchFigures(danceId));
-
-    setCachedFigures(state => ({ ...state, [danceId]: figures }));
-    setFigures(figures);
-  }
-
-  async function fetchDances(danceTypeId: string): Promise<void> {
-    const dances = await (cachedDances[danceTypeId] ||
-      props.service.fetchDances(danceTypeId));
-    const selectedDance = dances.length > 0 ? dances[0].id : '';
-
-    setCachedDances(state => ({ ...state, [danceTypeId]: dances }));
-    setSelectedDance(selectedDance);
-    setDances(dances);
-
-    if (selectedDance !== '') fetchFigures(selectedDance);
-  }
+    fetchDanceTypes();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-    fetchDanceTypes();
-  });
+    const fetchDances = async (danceTypeId: string) => {
+      const dances = await (dancesByType[danceTypeId] ||
+        props.service.fetchDances(danceTypeId));
+      const selectedDance = dances.length > 0 ? dances[0].id : '';
+
+      setDancesByType(state => ({ ...state, [danceTypeId]: dances }));
+      setSelectedDance(selectedDance);
+      setDances(dances);
+    };
+
+    fetchDances(selectedDanceType);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDanceType]);
+
+  useEffect(() => {
+    const fetchFigures = async (danceId: string) => {
+      const figures = await (figuresByDance[danceId] ||
+        props.service.fetchFigures(danceId));
+
+      setFiguresByDance(state => ({ ...state, [danceId]: figures }));
+      setFigures(figures);
+    };
+
+    fetchFigures(selectedDance);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDance]);
 
   function handleDanceTypeChange(
     event: React.ChangeEvent<{ value: unknown }>
   ): void {
     const selectedDanceType = event.target.value as string;
     setSelectedDanceType(selectedDanceType);
-    fetchDances(selectedDanceType);
   }
 
   function handleDanceChange(
@@ -79,7 +85,6 @@ const App: React.FC<IAppProps> = props => {
   ): void {
     const selectedDance = event.target.value as string;
     setSelectedDance(selectedDance);
-    fetchFigures(selectedDance);
   }
 
   const classes = useStyles();
