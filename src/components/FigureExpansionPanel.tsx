@@ -1,7 +1,7 @@
 import { Avatar, Button, createStyles, ExpansionPanel, ExpansionPanelActions, ExpansionPanelDetails, ExpansionPanelSummary, makeStyles, Theme, Typography } from '@material-ui/core';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import React from 'react';
-import { IFigure } from '../DataService';
+import { IFigure } from '../data-service';
 import MarkdownContent from './MarkdownContent';
 
 interface IFigureProps {
@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-const Figure: React.FC<IFigureProps> = ({ data }) => {
+const FigureExpansionPanel: React.FC<IFigureProps> = ({ data }) => {
   const classes = useStyles();
 
   return (
@@ -48,4 +48,4 @@ const Figure: React.FC<IFigureProps> = ({ data }) => {
   );
 };
 
-export default Figure;
+export default FigureExpansionPanel;

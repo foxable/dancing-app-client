@@ -1,14 +1,13 @@
 import { Container, createStyles, makeStyles, Theme } from '@material-ui/core';
-import React, { useState, useEffect } from 'react';
-import Figure from './components/Figure';
-import HeaderNav from './components/HeaderNav';
-import Select from './components/Select';
-import { DataService, IDance, IDanceType, IFigure } from './DataService';
+import React, { useEffect, useState } from 'react';
+import FigureExpansionPanel from './components/FigureExpansionPanel';
+import FilterSelect from './components/FilterSelect';
+import { DataService, IDance, IDanceType, IFigure } from './data-service';
+import Header from './layout/Header';
 
 interface IAppProps {
   service: DataService;
 }
-
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -87,16 +86,16 @@ const App: React.FC<IAppProps> = props => {
 
   return (
     <>
-      <HeaderNav />
+      <Header />
       <Container>
         <div className={classes.selectGroup}>
-          <Select
+          <FilterSelect
             className={classes.select}
             value={selectedDanceType}
             onChange={handleDanceTypeChange}
             options={danceTypes}
           />
-          <Select
+          <FilterSelect
             className={classes.select}
             value={selectedDance}
             onChange={handleDanceChange}
@@ -104,7 +103,7 @@ const App: React.FC<IAppProps> = props => {
           />
         </div>
         {figures.map(_ => (
-          <Figure key={_.id} data={_} />
+          <FigureExpansionPanel key={_.id} data={_} />
         ))}
       </Container>
     </>
