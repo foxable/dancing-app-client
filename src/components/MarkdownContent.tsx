@@ -1,18 +1,15 @@
-import React from "react";
-import marked from "marked";
+import { Typography } from '@material-ui/core';
+import marked from 'marked';
+import React from 'react';
 
-import { Content } from "./bulma";
-
-interface IMarkdownContentProps
-{
-    text: string;
+interface IMarkdownContentProps {
+  text: string;
 }
 
-const MarkdownContent: React.FC<IMarkdownContentProps> = ({ text }) =>
-{
-    const innerHtml = { __html: marked(text) };
-        
-    return <Content dangerouslySetInnerHTML={innerHtml}/>;
+const MarkdownContent: React.FC<IMarkdownContentProps> = ({ text }) => {
+  const innerHtml = { __html: marked(text) };
+
+  return <Typography dangerouslySetInnerHTML={innerHtml} />;
 };
 
 export default MarkdownContent;

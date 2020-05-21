@@ -1,35 +1,51 @@
-import React, { useState } from "react";
+import { Avatar, Button, createStyles, ExpansionPanel, ExpansionPanelActions, ExpansionPanelDetails, ExpansionPanelSummary, makeStyles, Theme, Typography } from '@material-ui/core';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import React from 'react';
+import { IFigure } from '../DataService';
+import MarkdownContent from './MarkdownContent';
 
-import { IFigure } from "../DataService";
-import { Card, CardHeader, CardHeaderTitle, CardContent, CardFooter, CardFooterItem, Tag } from "./bulma";
-import MarkdownContent from "./MarkdownContent";
-
-interface IFigureProps
-{
-    data: IFigure;
+interface IFigureProps {
+  data: IFigure;
 }
 
-const Figure: React.FC<IFigureProps> = ({ data }) =>
-{
-    const [showDetails, setShowDetails] = useState(false);
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    avatar: {      
+      width: theme.spacing(3),
+      height: theme.spacing(3),
+      color: theme.palette.primary.contrastText,
+      backgroundColor: theme.palette.primary.main,
+      fontSize: '0.8rem',
+      marginRight: '1rem'
+    }
+  })
+);
 
-    return (
-        <Card isFullWidth onClick={() => setShowDetails(!showDetails)}>
-            <CardHeader>
-                <CardHeaderTitle>
-                    {data.name}
-                    {data.level === 0
-                        ? <Tag className="figure-tag" isInfo>W</Tag>
-                        : <Tag className="figure-tag" isLight>{data.level}</Tag> }
-                </CardHeaderTitle>
-            </CardHeader>
-            {showDetails ?
-                <>
-                    { data.description && <CardContent><MarkdownContent text={data.description}/></CardContent> }
-                    { data.video_url && <CardFooter><CardFooterItem href={data.video_url}>Video</CardFooterItem></CardFooter> }
-                </> : "" }
-        </Card>
-    );
+const Figure: React.FC<IFigureProps> = ({ data }) => {
+  const classes = useStyles();
+
+  return (
+    <ExpansionPanel>
+      <ExpansionPanelSummary expandIcon={<ExpandMoreIcon />}>
+        <Avatar className={classes.avatar}>{data.level === 0 ? 'W' : data.level}</Avatar>
+        <Typography>{data.name}</Typography>
+      </ExpansionPanelSummary>
+      {data.description && (
+        <ExpansionPanelDetails>
+          <Typography color="textSecondary">
+            <MarkdownContent text={data.description} />
+          </Typography>
+        </ExpansionPanelDetails>
+      )}
+      {data.video_url && (
+        <ExpansionPanelActions>
+          <Button color="primary" href={data.video_url}>
+            Video
+          </Button>
+        </ExpansionPanelActions>
+      )}
+    </ExpansionPanel>
+  );
 };
 
 export default Figure;

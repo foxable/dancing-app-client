@@ -1,31 +1,25 @@
-import React from "react";
+import { FormControl, Select as SelectControl, SelectProps } from '@material-ui/core';
+import React from 'react';
 
-import { Field, Control, Select as SelectInput } from "./bulma";
-
-interface ISelectProps
-{
-    value: string | undefined;    
-    options: ISelectOption[];
-    onChange(event: React.ChangeEvent<HTMLSelectElement>): void;
+interface ISelectProps extends SelectProps {
+  options: ISelectOption[];
 }
 
-interface ISelectOption
-{
-    id: string;
-    name: string;
+interface ISelectOption {
+  id: string;
+  name: string;
 }
 
-const Select: React.FC<ISelectProps> = ({ value, options, onChange }) => (
-    <Field>
-        <Control isExpanded>
-            <SelectInput
-                value={value}
-                onChange={onChange}
-                isFullWidth>
-                {options.map(_ => <option key={_.id} value={_.id}>{_.name}</option>)}
-            </SelectInput>
-        </Control>
-    </Field>
+const Select: React.FC<ISelectProps> = ({ options, ...rest }) => (
+  <FormControl variant="outlined">
+    <SelectControl {...rest}>
+      {options.map(_ => (
+        <option key={_.id} value={_.id}>
+          {_.name}
+        </option>
+      ))}
+    </SelectControl>
+  </FormControl>
 );
 
 export default Select;

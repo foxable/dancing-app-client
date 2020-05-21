@@ -1,15 +1,14 @@
+import { AppBar, Tab, Tabs, Container } from "@material-ui/core";
 import React from "react";
 
-import { Container, Tabs, TabList, Tab, TabLink } from "./bulma";
-
 const HeaderNav: React.FC = () => (
-    <Tabs isBoxed>
-        <Container>
-            <TabList>
-                <Tab isActive><TabLink>Tanzfiguren</TabLink></Tab>
-            </TabList>
-        </Container>
-    </Tabs>
+  <AppBar position="static">
+    <Container>
+      <Tabs value="figures">
+        <Tab value="figures" label="Tanzfiguren" />
+      </Tabs>
+    </Container>
+  </AppBar>
 );
 
 export default HeaderNav;

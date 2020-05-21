@@ -1,124 +1,114 @@
-import React from "react";
+import { Container, createStyles, makeStyles, Theme } from '@material-ui/core';
+import React, { useState, useEffect } from 'react';
+import Figure from './components/Figure';
+import HeaderNav from './components/HeaderNav';
+import Select from './components/Select';
+import { DataService, IDance, IDanceType, IFigure } from './DataService';
 
-import { DataService, IDanceType, IDance, IFigure } from "./DataService";
-import { Hero, HeroFooter, Section, Container } from "./components/bulma";
-
-import HeaderNav from "./components/HeaderNav";
-import Select from "./components/Select";
-import Figure from "./components/Figure";
-
-interface IAppProps
-{
-    service: DataService;
+interface IAppProps {
+  service: DataService;
 }
 
-interface IAppState
-{
-    selectedDanceType?: string;
-    selectedDance?: string;    
-    danceTypes: IDanceType[];
-    dances: IDance[];
-    figures: IFigure[];    
-}
 
-interface IAppCache
-{
-    readonly dances: Map<string, IDance[]>;
-    readonly figures: Map<string, IFigure[]>;
-}
-
-export default class App extends React.Component<IAppProps, IAppState>
-{
-    private readonly _cache: IAppCache = {
-        dances: new Map(),
-        figures: new Map()
-    };
-
-    public constructor(props: IAppProps)
-    {
-        super(props);
-        this.state = {            
-            dances: [],
-            figures: [],
-            danceTypes: []
-        };
-
-        this.handleDanceTypeChange = this.handleDanceTypeChange.bind(this);
-        this.handleDanceChange = this.handleDanceChange.bind(this);
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    selectGroup: {
+      margin: '1rem 0'
+    },
+    select: {
+      marginRight: '1rem'
     }
+  })
+);
 
-    public componentDidMount(): void
-    {
-        this.fetchDanceTypes();
-    }
+const App: React.FC<IAppProps> = props => {
+  const [cachedDances, setCachedDances] = useState<Record<string, IDance[]>>(
+    {}
+  );
+  const [cachedFigures, setCachedFigures] = useState<Record<string, IFigure[]>>(
+    {}
+  );
+  const [selectedDanceType, setSelectedDanceType] = useState('');
+  const [selectedDance, setSelectedDance] = useState('');
+  const [dances, setDances] = useState<IDance[]>([]);
+  const [figures, setFigures] = useState<IFigure[]>([]);
+  const [danceTypes, setDanceTypes] = useState<IDanceType[]>([]);
 
-    private async fetchDanceTypes(): Promise<void>
-    {
-        const danceTypes = await this.props.service.fetchDanceTypes();
-        const selectedDanceType = danceTypes.length > 0 ? danceTypes[0].id : undefined;
-        this.setState({ ...this.state, selectedDanceType, danceTypes });
+  async function fetchDanceTypes(): Promise<void> {
+    const danceTypes = await props.service.fetchDanceTypes();
+    const selectedDanceType = danceTypes.length > 0 ? danceTypes[0].id : '';
+    setSelectedDanceType(selectedDanceType);
+    setDanceTypes(danceTypes);
 
-        if (typeof selectedDanceType !== "undefined")
-            this.fetchDances(selectedDanceType);  
-    }
+    if (selectedDanceType !== '') fetchDances(selectedDanceType);
+  }
 
-    private async fetchDances(danceTypeId: string): Promise<void>
-    {
-        const dances = await (this._cache.dances.get(danceTypeId) || this.props.service.fetchDances(danceTypeId));
-        const selectedDance = dances.length > 0 ? dances[0].id : undefined;
+  async function fetchFigures(danceId: string): Promise<void> {
+    const figures = await (cachedFigures[danceId] ||
+      props.service.fetchFigures(danceId));
 
-        this._cache.dances.set(danceTypeId, dances);
-        this.setState({ ...this.state, selectedDance, dances });
+    setCachedFigures(state => ({ ...state, [danceId]: figures }));
+    setFigures(figures);
+  }
 
-        if (typeof selectedDance !== "undefined")
-            this.fetchFigures(selectedDance);
-    }
+  async function fetchDances(danceTypeId: string): Promise<void> {
+    const dances = await (cachedDances[danceTypeId] ||
+      props.service.fetchDances(danceTypeId));
+    const selectedDance = dances.length > 0 ? dances[0].id : '';
 
-    private async fetchFigures(danceId: string): Promise<void>
-    {
-        const figures = await (this._cache.figures.get(danceId) || this.props.service.fetchFigures(danceId));
+    setCachedDances(state => ({ ...state, [danceTypeId]: dances }));
+    setSelectedDance(selectedDance);
+    setDances(dances);
 
-        this._cache.figures.set(danceId, figures);        
-        this.setState({ ...this.state, figures });
-    }
+    if (selectedDance !== '') fetchFigures(selectedDance);
+  }
 
-    private handleDanceTypeChange(event: React.ChangeEvent<HTMLSelectElement>): void
-    {
-        const selectedDanceType = event.target.value;
-        this.setState({ ...this.state, selectedDanceType });
-        this.fetchDances(selectedDanceType);
-    }
+  useEffect(() => {
+    fetchDanceTypes();
+  });
 
-    private handleDanceChange(event: React.ChangeEvent<HTMLSelectElement>): void
-    {
-        const selectedDance = event.target.value;
-        this.setState({ ...this.state, selectedDance });
-        this.fetchFigures(selectedDance);
-    }
+  function handleDanceTypeChange(
+    event: React.ChangeEvent<{ value: unknown }>
+  ): void {
+    const selectedDanceType = event.target.value as string;
+    setSelectedDanceType(selectedDanceType);
+    fetchDances(selectedDanceType);
+  }
 
-    public render(): JSX.Element
-    {
-        return (
-            <>
-                <Hero isDark>
-                    <HeroFooter className="header-footer">
-                        <HeaderNav/>
-                    </HeroFooter>
-                </Hero>
-                <Section>
-                    <Container>
-                        <Select
-                            value={this.state.selectedDanceType}
-                            onChange={this.handleDanceTypeChange}
-                            options={this.state.danceTypes}/>
-                        <Select
-                            value={this.state.selectedDance}
-                            onChange={this.handleDanceChange}
-                            options={this.state.dances}/>
-                        {this.state.figures.map(_ => <Figure key={_.id} data={_}/>)}
-                    </Container>
-                </Section>          
-            </>            
-        );
-    }
-}
+  function handleDanceChange(
+    event: React.ChangeEvent<{ value: unknown }>
+  ): void {
+    const selectedDance = event.target.value as string;
+    setSelectedDance(selectedDance);
+    fetchFigures(selectedDance);
+  }
+
+  const classes = useStyles();
+
+  return (
+    <>
+      <HeaderNav />
+      <Container>
+        <div className={classes.selectGroup}>
+          <Select
+            className={classes.select}
+            value={selectedDanceType}
+            onChange={handleDanceTypeChange}
+            options={danceTypes}
+          />
+          <Select
+            className={classes.select}
+            value={selectedDance}
+            onChange={handleDanceChange}
+            options={dances}
+          />
+        </div>
+        {figures.map(_ => (
+          <Figure key={_.id} data={_} />
+        ))}
+      </Container>
+    </>
+  );
+};
+
+export default App;
