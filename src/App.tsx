@@ -11,11 +11,9 @@ interface IAppProps {
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    selectGroup: {
-      margin: '1rem 0'
-    },
     select: {
-      marginRight: '1rem'
+      margin: theme.spacing(1),
+      marginLeft: 0
     }
   })
 );
@@ -93,7 +91,7 @@ const App: React.FC<IAppProps> = props => {
     <>
       <Header />
       <Container>
-        <div className={classes.selectGroup}>
+        <div>
           <FilterSelect
             className={classes.select}
             value={selectedDanceType}
